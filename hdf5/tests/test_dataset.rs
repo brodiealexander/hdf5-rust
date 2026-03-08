@@ -172,7 +172,7 @@ where
 
     Ok(())
 }
-
+#[allow(clippy::unused_io_amount)]
 fn test_byte_read_seek_impl(ds: &hdf5::Dataset, arr: &ArrayD<u8>, ndim: usize) -> hdf5::Result<()> {
     let mut rng = SmallRng::seed_from_u64(42);
     ds.write(arr)?;

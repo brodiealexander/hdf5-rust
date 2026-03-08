@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, fs::OpenOptions, io::Read};
 
 fn feature_enabled(feature: &str) -> bool {
     env::var(format!("CARGO_FEATURE_{}", feature)).is_ok()
@@ -29,7 +29,30 @@ fn configure_cmake_cross_run_advanced_cache_vars(cfg: &mut cmake::Config) {
     }
 }
 
+use std::io::Write;
+
 fn main() {
+    // cursed handling of cargo-xwin's bullshit.
+    if let Some(toolchain) = env::var_os("CMAKE_TOOLCHAIN_FILE") {
+        if !toolchain.is_empty() {
+            let contents = {
+                let mut file = OpenOptions::new().read(true).open(&toolchain).unwrap();
+
+                let mut contents = String::new();
+                file.read_to_string(&mut contents).unwrap();
+                contents
+            };
+            let mut file = OpenOptions::new().write(true).truncate(true).open(toolchain).unwrap();
+            for line in contents.lines() {
+                if !line.contains("libpath") {
+                    writeln!(file, "{line}").unwrap();
+                } else {
+                    writeln!(file, "{}", line.replace("\"", "")).unwrap();
+                }
+            }
+        }
+    };
+
     println!("cargo::rerun-if-changed=build.rs");
     let mut cfg = cmake::Config::new("ext/hdf5");
 

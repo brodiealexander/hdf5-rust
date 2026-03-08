@@ -1008,6 +1008,7 @@ mod tests {
         })
     }
 
+    #[allow(clippy::approx_constant)]
     fn big_struct_1() -> BigStruct {
         BigStruct {
             ints: (-10, 20, -30, 40),
